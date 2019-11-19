@@ -1,0 +1,9 @@
+# DockerServer
+
+- hosts: Docker
+  become: true
+  vars:
+    docker_users: ccox
+  roles:
+    - geerlingguy.docker
+

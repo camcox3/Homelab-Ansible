@@ -1,0 +1,36 @@
+# DockerServer
+
+- hosts: Docker
+  become: true
+  tasks:
+  - name: create multiple directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: 777
+    with_items:
+      - '/opt/radarr'
+      - '/opt/sonarr'
+      - '/opt/jackett'
+      - '/opt/portainer'
+      - '/opt/transmission'
+      - '/opt/recipies'
+      - '/opt/jenkins'
+      - '/mnt/nas'
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+  - name: create directories
+    file:
+      path: /mnt/nas
+      state: directory
+      mode: 0777
+  - name: Ensure rpcbind is running (CentOS)
+    service: name=rpcbind state=started enabled=yes
+  - name: mount PLEX NFS
+    mount:
+      path: /mnt/nas
+      src: 192.168.1.184:/PLEX
+      fstype: nfs
+      opts: rw,sync,hard,intr
+      state: mounted

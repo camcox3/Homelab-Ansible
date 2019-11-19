@@ -1,0 +1,18 @@
+# DockerServer
+
+- hosts: Docker
+  become: true
+  tasks:
+  - name: create multiple directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: 777
+    with_items:
+      - '/opt/radarr'
+      - '/opt/sonarr'
+      - '/opt/jackett'
+      - '/opt/portainer'
+      - '/opt/transmission'
+      - '/opt/recipies'
+      - '/opt/jenkins'

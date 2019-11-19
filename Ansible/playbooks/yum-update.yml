@@ -1,0 +1,20 @@
+# Update Yum
+
+- hosts: Plex
+  become: true
+  tasks:
+    - name: Add EPEL-RELEASE yum packages
+      yum: name=epel-release state=present
+    - name: Updating yum packages
+      yum: name=* state=latest
+    - name: install required packages
+      yum:
+        name:
+          - nfs-utils
+          - vim
+          - htop
+          - qemu-guest-agent
+          - cockpit
+        state: present
+    - name: start cockpit
+      service: name=cockpit.socket state=started enabled=yes

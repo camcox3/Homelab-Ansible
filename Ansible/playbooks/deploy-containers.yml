@@ -1,0 +1,223 @@
+ deploy a container
+
+- hosts: Docker
+  become: true
+  become_method: sudo
+  tasks:
+   - name: Install docker-py
+     pip: 
+       name: 
+         - setuptools
+         - docker-py
+
+   - name: Pull the latest official jackett docker image
+     docker_image:
+       name: "linuxserver/jackett:latest"
+       source: "pull"
+
+   - name: Create a container from the Jackett docker image
+     docker_container:
+       name: "jackett-server"
+       image: "linuxserver/jackett"
+       env:
+         TZ: "America/New_York"
+       ports:
+           - "9117:9117"
+       volumes:
+           - "/opt/jackett/config:/config"
+           - "/opt/jackett/downloads:/downloads"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+   - name: Pull the latest official radarr docker image
+     docker_image:
+       name: "linuxserver/radarr:latest"
+       source: "pull"
+
+  - name: Create a container from the radarr docker image
+    docker_container:
+      name: "radarr-server"
+      image: "linuxserver/radarr"
+      env:
+         PIUD: "1000"
+         PGID: "1000"
+        TZ: "America/New_York"
+      ports:
+          - "7878:7878"
+      volumes:
+          - "/opt/radarr:/config"
+          - "/mnt/nas/completed:/data"
+          - "/mnt/nas/completed/movies:/movies"
+      state: started
+      restart_policy: "unless-stopped"
+      recreate: no
+
+   - name: Pull the latest official sonarr docker image
+     docker_image:
+       name: "linuxserver/sonarr:latest"
+       source: "pull"
+
+   - name: Create a container from the sonarr docker image
+     docker_container:
+       name: "sonarr-server"
+       image: "linuxserver/sonarr"
+       env:
+          PIUD: "1000"
+          PGID: "1000"
+         TZ: "America/New_York"
+       ports:
+           - "8989:8989"
+       volumes:
+           - "/opt/sonarr:/config"
+           - "/mnt/nas/completed:/data"
+           - "/mnt/nas/completed/TV:/tv"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+   - name: Pull the latest official Jenkins docker image
+     docker_image:
+       name: "jenkins/jenkins:latest"
+       source: "pull"
+
+   - name: Create a container from the Jenkins docker image
+     docker_container:
+       name: "jenkins-server"
+       image: "jenkins/jenkins"
+       user: "jenkins"
+       ports:
+           - "8088:8080"
+           - "5000:5000"
+       volumes:
+           - "/opt/jenkins:/var/jenkins_home"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+
+   - name: Pull the latest official portainer docker image
+     docker_image:
+       name: "portainer/portainer:latest"
+       source: "pull"
+
+   - name: Create a container from the portainer docker image
+     docker_container:
+       name: "portainer-server"
+       image: "portainer/portainer"
+       ports:
+           - "9000:9000"
+           - "8000:8000"
+       volumes:
+           - "/opt/portainer:/data"
+           - "/var/run/docker.sock:/var/run/docker.sock"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+   - name: Pull the latest official transmission docker image
+     docker_image:
+       name: "haugene/transmission-openvpn:latest"
+       source: "pull"
+
+   - name: Create a container from the transmission docker image
+     docker_container:
+       name: "transmission-server"
+       image: "haugene/transmission-openvpn"
+       privileged: yes
+       env:
+         OPENVPN_PROVIDER: "PIA"
+         OPENVPN_CONFIG: "US East"
+         OPENVPN_USERNAME: ""
+         OPENVPN_PASSWORD: ""
+         LOCAL_NETWORK: "192.168.1.0/24"
+         TRANSMISSION_RATIO_LIMIT_ENABLED: "true"
+         TRANSMISSION_RATIO_LIMIT: "0"
+         TZ: "America/New_York"
+         TRANSMISSION_WEB_UI: "combustion"
+       ports:
+           - "9001-9097:9001-9097"
+       dns_servers: "8.8.8.8"
+       volumes:
+           - "/mnt/nas:/data"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+   - name: Pull the latest official guacamole docker image
+     docker_image:
+       name: "oznu/guacamole:latest"
+       source: "pull"
+
+   - name: Create a container from the guacamole docker image
+     docker_container:
+       name: "guac-server"
+       image: "oznu/guacamole"
+       ports:
+           - "8080:8080"
+       volumes:
+           - "/opt/guacamole:/config"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+   - name: Pull the latest official cadvisor docker image
+     docker_image:
+       name: "google/cadvisor:latest"
+       source: "pull"
+
+   - name: Create a container from the cadvisor docker image
+     docker_container:
+       name: "cadvisor-server"
+       image: "google/cadvisor"
+       privileged: yes
+       ports:
+           - "8089:8080"
+       volumes:
+         - "/:/rootfs:ro"
+         - "/var/run:/var/run:ro"
+         - "/var/lib/docker/:/var/lib/docker:ro"
+         - "/sys:/sys:ro"
+         - "/dev/disk/:/dev/disk:ro"
+         - "/cgroup:/cgroup:ro"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+
+   - name: Pull the latest official splunk docker image
+     docker_image:
+       name: "splunk/splunk:latest"
+       source: "pull"
+
+   - name: Create a container from the Splunk docker image
+     docker_container:
+       name: "splunk-server"
+       image: "splunk/splunk"
+       ports:
+           - "8001:8000"
+           - "9997:9997"
+       volumes:
+         - "/opt/splunk/etc:/opt/splunk/etc"
+         - "/opt/splunk/var:/opt/splunk/var"
+       env:
+         SPLUNK_PASSWORD: ""
+         SPLUNK_START_ARGS: "--accept-license"
+       state: started
+       restart_policy: "unless-stopped"
+       recreate: no
+  #  - name: Pull the latest official nginx-proxy docker image
+  #    docker_image:
+  #      name: "jwilder/nginx-proxy:latest"
+  #      source: "pull"
+
+  #  - name: Create a container from the nginx-proxy docker image
+  #    docker_container:
+  #      name: "proxy-server"
+  #      image: "jwilder/nginx-proxy"
+  #      ports:
+  #          - "80:80"
+  #      volumes:
+  #          - "/var/run/docker.sock:/tmp/docker.sock:ro"
+  #      state: started
+  #      restart_policy: "unless-stopped"
+  #      recreate: yes

@@ -1,0 +1,48 @@
+# Install Plex
+
+- hosts: Plex
+  become: true
+  tasks:
+    - name: Disable SELinux
+      selinux:
+        state: disabled
+    - name: create directories
+      file:
+        path: /mnt/nas
+        state: directory
+        mode: 0777
+    - name: Ensure rpcbind is running (CentOS)
+      service: name=rpcbind state=started enabled=yes
+    - name: mount PLEX NFS
+      mount:
+        path: /mnt/nas
+        src: 192.168.1.184:/PLEX
+        fstype: nfs
+        opts: rw,sync,hard,intr
+        state: mounted
+    - name: download plex rpm
+      get_url:
+        url: https://downloads.plex.tv/plex-media-server-new/1.18.1.1973-0f4abfbcc/redhat/plexmediaserver-1.18.1.1973-0f4abfbcc.x86_64.rpm
+        dest: /tmp/plex.rpm
+        mode: 0777
+    - name: install plex
+      yum:
+        name: /tmp/plex.rpm
+        state: present
+    - name: stop plex
+      service: name=plexmediaserver state=stopped enabled=yes
+    - name: stop firewalld
+      service: name=firewalld state=stopped enabled=no
+    - name: delete DBs
+      shell: rm -rf /var/lib/plexmediaserver/Library/Application\ Support/Plex\ Media\ Server/Plug-in\ Support/Databases/com.plexapp.plugins.library.db*
+      tags: [ 'never', 'restore' ]
+    - name: restore Backups
+      copy:
+        src: /mnt/nas/Backups/Plex/com.plexapp.plugins.library.db
+        dest: /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/
+        owner: plex
+        mode: 777
+        remote_src: yes
+    - name: start plex
+      service: name=plexmediaserver state=started enabled=yes
+
